@@ -1,9 +1,9 @@
 package main
 
 // interface 实际上是一个约定
-// 方法中的形参(interface) 约定实参要实现的方法
+// 函数中的的形参(interface) 约定实参要实现的方法
 // 实现该 interface 的类型作为实参
-// 在方法中具体化对实参方法的调用
+// 在函数中具体化对实参方法的调用
 
 import (
 	"bufio"
