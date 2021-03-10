@@ -12,9 +12,10 @@ import (
 	"io"
 )
 
-const debug = false
+const debug = true
 
 func main() {
+	// Buffer 具体类型实现了由os.Writer 约定的 Write 方法
 	var buf *bytes.Buffer
 	if debug {
 		buf = new(bytes.Buffer) // 启用输出收集
