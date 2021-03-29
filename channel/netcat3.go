@@ -24,6 +24,7 @@ func main() {
 	go func() {
 		io.Copy(os.Stdout, conn) // 忽略错误处理
 		log.Println("done")
+		// 程序总是在退出前记录 "done" 消息
 		done <- struct{}{} // 指示主 goroutine
 	}()
 	mustCopy(conn, os.Stdin)
