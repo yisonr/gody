@@ -38,7 +38,7 @@ func echo(c net.Conn, shout string, delay time.Duration) {
 func handleConn(c net.Conn) {
 	input := bufio.NewScanner(c)
 	for input.Scan() {
-		go echo(c, input.Text(), 10*time.Second)
+		go echo(c, input.Text(), 1*time.Second)
 		// 回声并发
 	}
 	// note: ignore input.Error() error
