@@ -39,6 +39,12 @@ func main() {
 	naturals := make(chan int)
 	squarers := make(chan int)
 	go counter(naturals)
+	// 这里的调用隐式的将 `chan int` 类型
+	// 转化为参数要求的 `chan<- int` 类型
+	// 在任何赋值操作中将双向通道转换为单向通道都是允许的，
+	// 但禁止将单向通道转换为双向通道
+	// 对于一个单向通道 `chan<- int` ， 没有办法获取到
+	// 引用同一个数据结构的 `chan int` 数据类型
 	go squarer(squarers, naturals)
 	printer(squarers)
 }
