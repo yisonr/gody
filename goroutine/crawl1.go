@@ -20,7 +20,8 @@ func crawl(url string) []string {
 func main() {
 	worklist := make(chan []string)
 
-	// 从命令行参数开始
+	// 从命令行参数开始, 发送给任务列表的命令行参数
+	// 必须在它自己的goroutine中允许来避免死锁???
 	go func() { worklist <- os.Args[1:] }()
 
 	// 并发爬取 web
