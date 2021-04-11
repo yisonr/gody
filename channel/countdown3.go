@@ -28,7 +28,7 @@ func main() {
 	for countdown := 10; countdown > 0; countdown-- {
 		fmt.Println(countdown)
 		select {
-		case <-tick:
+		case <-tick: //  产生倒计时时间
 			// 不执行操作
 		case <-abort:
 			fmt.Println("Launch aborted!")
