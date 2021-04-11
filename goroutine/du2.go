@@ -1,26 +1,36 @@
 package main
 
+// 比du1的并发度更高
+
 import (
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 )
 
-func walkDir(dir string, fileSizes chan<- int64) {
+func walkDir(dir string, n *sync.WaitGroup, fileSizes chan<- int64) {
+	defer n.Done()
 	for _, entry := range dirents(dir) {
 		if entry.IsDir() {
+			n.Add(1)
 			subdir := filepath.Join(dir, entry.Name())
-			walkDir(subdir, fileSizes)
+			go walkDir(subdir, n, fileSizes)
 		} else {
 			fileSizes <- entry.Size()
 		}
 	}
 }
 
+// sema 是一个用于限制目录并发数的计数信号量
+var sema = make(chan struct{}, 20)
+
 func dirents(dir string) []os.FileInfo {
+	sema <- struct{}{}        // 获取令牌  p操作
+	defer func() { <-sema }() // 释放令牌 v操作, defer 后需是一个函数调用
 	entries, err := ioutil.ReadDir(dir)
 	if err != nil {
 		// fmt.Fprintf(os.Stderr, "du1: %v\n", err)
@@ -42,10 +52,13 @@ func main() {
 
 	// 遍历文件树
 	fileSizes := make(chan int64, 10)
+	var n sync.WaitGroup // 防goroutine泄露
+	for _, root := range roots {
+		n.Add(1)
+		go walkDir(root, &n, fileSizes)
+	}
 	go func() {
-		for _, root := range roots {
-			walkDir(root, fileSizes) // 这里可以并发
-		}
+		n.Wait()
 		close(fileSizes)
 	}()
 
