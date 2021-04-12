@@ -3,7 +3,7 @@ package main
 // TODO: 加深理解
 // 在du2的基础上添加取消功能
 // 一个goroutine无法直接终止另一个，否则会让共享变量状态处于不确定状态???
-// 任何时刻都很难知道有多少goroutine正在工作.
+// 通常任何时刻都很难知道有多少goroutine正在工作.
 // 对于取消操作，需要一个可靠的机制在一个通道上广播一个事件，
 // 这样很多goroutine可以检测到事件的发生
 // 创建这样一个广播机制: 不在通道上发送值，而是关闭它
@@ -21,12 +21,15 @@ import (
 
 func walkDir(dir string, n *sync.WaitGroup, fileSizes chan<- int64) {
 	defer n.Done()
+	// 1.检查是否取消
 	if cancelled() {
 		return
 	}
+	// 2.在 dirents 中检查是否取消
 	for _, entry := range dirents(dir) {
 		if entry.IsDir() {
-			n.Add(1)
+			n.Add(1) // 在每一个goroutine创建之前add(1), 然后在goroutine中
+			// 传入sync.WaitGroup，使用 done() 在goroutine完成后减1
 			subdir := filepath.Join(dir, entry.Name())
 			go walkDir(subdir, n, fileSizes)
 		} else {
@@ -40,12 +43,16 @@ var sema = make(chan struct{}, 20)
 
 func dirents(dir string) []os.FileInfo {
 	// sema <- struct{}{}        // 获取令牌  p操作
+	// todo:
+	// 性能剖析揭示了它的瓶颈在于此处获取信号量令牌的操作
+	// 这里的select让取消操作的延迟从数百毫秒减为几十毫秒
 	select {
-	case sema <- struct{}{}: // 获取令牌
-	case <-done:
+	case sema <- struct{}{}: // 获取令牌 p操作
+	case <-done: // 2. 检查是否取消
 		return nil // 取消
 	}
 	defer func() { <-sema }() // 释放令牌 v操作, defer 后需是一个函数调用
+
 	entries, err := ioutil.ReadDir(dir)
 	if err != nil {
 		// fmt.Fprintf(os.Stderr, "du1: %v\n", err)
@@ -89,10 +96,15 @@ func main() {
 	var n sync.WaitGroup // 防goroutine泄露
 	for _, root := range roots {
 		n.Add(1)
+		// 为每一个 walkDir 的调用创建一个新的 goroutine
+		// 使用 sync.WaitGroup 为当前存活的 walkDir 调用计数
 		go walkDir(root, &n, fileSizes)
 	}
 	go func() {
 		n.Wait()
+		// sync.WaitGroup 计数器减为0的时候，关闭fileSizes通道
+		// 关闭通道是为了通知接收goroutine(在这里是主goroutine)，
+		// 发送工作已经完毕
 		close(fileSizes)
 	}()
 
@@ -104,13 +116,19 @@ func main() {
 		tick = time.Tick(1 * time.Second)
 	}
 	var nfiles, nbytes int64
-loop: // break 标签
+	// 主 goroutine 负责:
+	// 1. 定时输出结果
+	// 2. 检查来自标准输入的取消操作
+	// 3. 检查 fileSizes 的关闭并退出程序, 否则继续从通道接收，并累积结果
+loop: // break 标签, 这里的退出循环条件是: 1.回车退出 2.目录遍历完成
 	for {
 		// 同时满足时的随机性，导致第一个 case 偶尔存在未执行的可能
 		// 导致计算不准确???
 		select {
 		case <-done:
-			// 耗尽fileSizes以允许已有的goroutine结束
+			// 耗尽fileSizes以允许已有的goroutine结束, 否则产生泄露
+			// 已存在的 goroutine 发送到通道的值需要被接收,
+			// 否则发送 goroutine 会阻塞
 			for range fileSizes {
 				//不执行任何操作
 			}
@@ -127,6 +145,8 @@ loop: // break 标签
 			printDiskUsage(nfiles, nbytes)
 		}
 	} // 标签break退出for循环
+
+	// 程序退出前总是输出
 	printDiskUsage(nfiles, nbytes)
 }
 
@@ -134,6 +154,6 @@ func printDiskUsage(nfiles, nbytes int64) {
 	// fmt.Println(nbytes)
 	fmt.Printf("%d files %.1f GB\n", nfiles, float64(nbytes)/1e9)
 	// TODO
-	// 更好的显示文件大小
+	// 更好的显示文件大小, Kb, Mb, Gb
 	// 根目录大小异常
 }
