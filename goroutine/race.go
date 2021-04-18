@@ -8,6 +8,13 @@ package main
 // 运行编译后的程序会展示引发数据竞争的
 // goroutine 以及相关代码
 
+// 在 ./schedule.go 的基础上讨论同步问题:
+// go 提供了传统的同步 goroutine 的进制，就是对
+// 共享资源加锁
+// 使用 atomic 包来提供对数值类型的安全访问
+// 原子函数能够以很底层的加锁机制来同步访问
+// 整形变量和指针
+
 import (
 	"fmt"
 	"runtime"
