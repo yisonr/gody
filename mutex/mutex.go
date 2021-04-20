@@ -20,8 +20,8 @@ var (
 func main() {
 	wg.Add(2)
 
-	go incCounter(1)
-	go incCounter(2)
+	go incCounter(1) // 1 号 goroutine
+	go incCounter(2) // 2 号 goroutine
 
 	wg.Wait()
 	fmt.Printf("Final Counter: %d\n", counter)
@@ -30,6 +30,7 @@ func main() {
 // incCounter 使用互斥锁来同步并保证安全访问
 // 增加包里 counter 变量的值
 func incCounter(id int) {
+	// id 只为区分不同的 goroutine 而用，无实际意义
 	defer wg.Done()
 
 	for count := 0; count < 2; count++ {
