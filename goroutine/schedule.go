@@ -2,6 +2,9 @@ package main
 
 // todo: 调度器原理
 
+// goroutine 在逻辑处理器上执行，而逻辑处理器
+// 具有独立的系统线程和运行队列
+
 // 展示 goroutine 调度器是如何在单个线程上
 // 切分时间片的
 
@@ -25,7 +28,7 @@ var wg sync.WaitGroup // 等待程序完成
 
 func main() {
 	// 分配一个逻辑处理器给调度器使用
-	runtime.GOMAXPROCS(4)
+	runtime.GOMAXPROCS(1)
 	wg.Add(2)
 
 	// 创建两个 goroutine
