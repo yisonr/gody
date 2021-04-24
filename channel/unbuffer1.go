@@ -17,13 +17,16 @@ import (
 	"fmt"
 	"math/rand"
 	"sync"
-	"time"
+	// "time"
 )
 
 var wg sync.WaitGroup
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
+	// todo: 底层原理???
+	// 不做这种初始化调用 rand.Intn(100) 函数的结果是不变的(多次运行)
+	// 调用 Seed 函数将发生器初始化为确定状态
 }
 
 func main() {
