@@ -13,13 +13,10 @@ type Runner struct {
 	// interrupt 通道报告从操作系统
 	// 发送的信号
 	interrupt chan os.Signal
-
 	// complete 通道报告处理任务已经完成
 	complete chan error
-
 	// timeout 报告处理任务已经超时
 	timeout <-chan time.Time
-
 	// tasks 持有一组以索引顺序依次执行的函数
 	tasks []func(int) // 参数为 int 的函数切片
 }
@@ -72,7 +69,6 @@ func (r *Runner) run() error {
 		if r.gotInterrupt() {
 			return ErrInterrupt
 		}
-
 		// 执行已经注册的任务
 		task(id)
 	}

@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-const timeout = 6 * time.Second
+const timeout = 12 * time.Second
 
 func main() {
 	log.Println("Start work.")
