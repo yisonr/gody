@@ -15,6 +15,8 @@ package main
 // 原子函数能够以很底层的加锁机制来同步访问
 // 整形变量和指针
 
+//
+
 import (
 	"fmt"
 	"runtime"
