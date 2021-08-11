@@ -5,8 +5,8 @@ import (
 	"os"
 )
 
+// 追加一行
 func WriteCsvFile(headline []string) {
-	// 追加一行
 	filename := "./data.csv"
 	file, err := os.OpenFile(filename, os.O_CREATE|os.O_RDWR|os.O_APPEND, os.ModeAppend|os.ModePerm)
 	if err != nil {
