@@ -12,15 +12,15 @@ import "fmt"
  *
  */
 
-type user struct {
-	name  string
-	email string
-}
+// type user struct {
+// 	name  string
+// 	email string
+// }
 
 // notify 使用值接收者实现了一个方法
-func (u user) notify() {
-	fmt.Printf("Sending User Email To  %s<%s>\n", u.name, u.email)
-}
+// func (u user) notify() {
+// 	fmt.Printf("Sending User Email To  %s<%s>\n", u.name, u.email)
+// }
 
 // 如果使用值接收者声明方法， 调用时会使用这个值的一个副本来执行.
 
@@ -33,9 +33,9 @@ func (u user) notify() {
 
 // changeEmail 使用指针接收者实现了一个方法
 // changeEmail 的调用对值做的修改会反映在 lisa 指针所指向的值上,
-func (u *user) changeEmail(email string) {
-	u.email = email
-}
+// func (u *user) changeEmail(email string) {
+// 	u.email = email
+// }
 
 // 值接收者使用值的副本来调用方法，而指针接收者使用实际值来调用方法,
 // 也可以使用一个值来调用使用指针接收者声明的方法
