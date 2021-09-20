@@ -43,5 +43,21 @@ func main() {
 			}
 		}()
 	}
-
 }
+
+func loadConfig() {
+	// 加载配置
+	// ...
+}
+
+func requests() <-chan int {
+	requs := make(chan int, 4)
+	return requs
+}
+
+/*
+* 以上是一个简化的生产者消费者模型:
+* 后台线程生成最新的配置信息，前台多个工作者线程线程获取最新的配置信息，
+* 所有线程共享配置信息资源.
+*
+ */
