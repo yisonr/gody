@@ -56,4 +56,25 @@ func main() {
 	// reflect.Value 也满足 fmt.Stringer , 但除非 Value 包含的是一个字符串，
 	// 否则 String 方法的结果仅仅暴露了类型，通常要使用 fmt 包的 %v 功能，
 	// 它对 reflect.Value 会进行特殊处理.
+
+	// 调用 Value 的 Type 方法会把它的类型以 reflect.Type 方式返回
+	t1 := v.Type() // 一个 reflect.Type
+	fmt.Println(t1.String())
+
+	// reflect.ValueOf 的逆操作是 reflect.Value.Interface 方法，它返回一个
+	// interface{} 接口值，与 reflect.Value 包含同一个具体值
+	x := v.Interface() // interface{}
+	p := x.(int)       // interface 的动态类型是int, 取 interface 的动态值? TODO
+	fmt.Printf("%d\n", p)
+
+	/* TODO:
+	 * reflect.Value 和 interface{} 都可以包含任意的值，二者的区别是:
+	 *
+	 * 空接口(interface{}) 隐藏了值的布局信息、内置操作和相关方法,
+	 * 所以除非知道它的动态类型，并用一个类型断言来渗透进去，否则
+	 * 对其所包含的值束手无策
+	 *
+	 * Value 有很多方法可以分析包含的值，而不需知道其类型
+	 *
+	 */
 }
