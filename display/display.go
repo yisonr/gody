@@ -42,6 +42,7 @@ func display(path string, v reflect.Value) {
 		if v.IsNil() {
 			fmt.Printf("%s=nil\n", path)
 		} else {
+			// 为了避免二义性，在路径前加一个 "*", 外边再加上一对圆括号
 			display(fmt.Sprintf("(*%s)", path), v.Elem())
 		}
 	case reflect.Interface:
@@ -49,8 +50,9 @@ func display(path string, v reflect.Value) {
 			fmt.Printf("%s=nil\n", path)
 		} else {
 			fmt.Printf("%s.type=%s\n", path, v.Elem().Type())
+			display(path+".value", v.Elem())
 		}
-	default:
+	default: // 基本类型,通道,函数
 		fmt.Printf("%s=%s\n", path, formatAtom(v))
 	}
 }
