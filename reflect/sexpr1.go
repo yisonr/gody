@@ -12,7 +12,7 @@ import (
 func encode(buf *bytes.Buffer, v reflect.Value) error {
 	switch v.Kind() {
 	case reflect.Invalid:
-		buf.WriteString("\"nil\"")
+		buf.WriteString("\"\"")
 
 	case reflect.Int, reflect.Int8, reflect.Int16,
 		reflect.Int32, reflect.Int64:
