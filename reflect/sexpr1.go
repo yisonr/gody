@@ -1,5 +1,7 @@
 package main
 
+// 编码 S 表达式
+
 import (
 	"bytes"
 	"encoding/json"
