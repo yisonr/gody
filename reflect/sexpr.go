@@ -82,3 +82,47 @@ func encode(buf *bytes.Buffer, v reflect.Value) error {
 	}
 	return nil
 }
+
+// Marshal 把 go 的值编码为 S 表达式的形式
+func Marshal(v interface{}) ([]byte, error) {
+	var buf bytes.Buffer
+	if err := encode(&buf, reflect.ValueOf(v)); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+type Movie struct {
+	Title, Subtitle string
+	Year            int
+	// Color           bool
+	Actor  map[string]string
+	Oscars []string
+	Sequel *string
+}
+
+func main() {
+	strangelove := Movie{
+		Title:    "dr.liu",
+		Subtitle: "How i leard",
+		Year:     1984,
+		// Color:    false,
+		Actor: map[string]string{
+			"Dr.Liu":       "peter sellrs",
+			"Grp. Linoeel": "george select",
+			"Bring. Gen":   "Slim Pickens",
+		},
+		Oscars: []string{
+			"Best Actor",
+			"Best Adapted Nomin",
+			"Bsd shsdb",
+		},
+	}
+	out, err := Marshal(strangelove)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	fmt.Printf("编码---------------------:\n")
+	fmt.Println(string(out))
+}
