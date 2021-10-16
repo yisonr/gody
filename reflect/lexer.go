@@ -21,6 +21,7 @@ func (lex *lexer) consume(want rune) {
 	}
 }
 
+// TODO: 实验结果与教程不同， go 程序设计 Page270
 func read(lex *lexer, v reflect.Value) {
 	switch lex.token {
 	case scanner.Ident:
@@ -64,9 +65,6 @@ func readList(lex *lexer, v reflect.Value) {
 	case reflect.Struct:
 		for !endList(lex) {
 			lex.consume('(')
-			fmt.Println(lex.text())
-			fmt.Println(lex.token)
-			fmt.Println(scanner.Ident)
 			if lex.token != scanner.Ident {
 				panic(fmt.Sprintf("got token %q, want field name", lex.text()))
 			}
