@@ -32,6 +32,8 @@ func search(resp http.ResponseWriter, req *http.Request) {
 	}
 	// ...
 	fmt.Fprintf(resp, "Search: %+v\n", data)
+	// Pack(data)
+
 }
 
 func main() {

@@ -27,6 +27,9 @@ func Unpack(req *http.Request, ptr interface{}) error {
 	fields := make(map[string]reflect.Value)
 
 	v := reflect.ValueOf(ptr).Elem() // the struct variable, 可寻址
+	// 这里知道 ptr 是指针，所以没有做 switch v.Kind 判断，
+	// 同时利用 Elem() 获取指针所指向的 refelect.Value 值
+
 	for i := 0; i < v.NumField(); i++ {
 		fieldInfo := v.Type().Field(i) // a reflect.StructField
 		tag := fieldInfo.Tag           // a reflect.StructTag
@@ -34,7 +37,7 @@ func Unpack(req *http.Request, ptr interface{}) error {
 		if name == "" {
 			name = strings.ToLower(fieldInfo.Name)
 		}
-		fields[name] = v.Field(i)
+		fields[name] = v.Field(i) // tag名和需要解析的 reflect.Value对应
 	}
 	fmt.Println(fields)
 
