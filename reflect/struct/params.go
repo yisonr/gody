@@ -23,9 +23,10 @@ func Unpack(req *http.Request, ptr interface{}) error {
 		return err
 	}
 
-	// Build map of fields keyed by effective name.
+	// Build map of fields keyed by effective(有效的) name.
 	fields := make(map[string]reflect.Value)
-	v := reflect.ValueOf(ptr).Elem() // the struct variable
+
+	v := reflect.ValueOf(ptr).Elem() // the struct variable, 可寻址
 	for i := 0; i < v.NumField(); i++ {
 		fieldInfo := v.Type().Field(i) // a reflect.StructField
 		tag := fieldInfo.Tag           // a reflect.StructTag
@@ -35,6 +36,7 @@ func Unpack(req *http.Request, ptr interface{}) error {
 		}
 		fields[name] = v.Field(i)
 	}
+	fmt.Println(fields)
 
 	// Update struct field for each parameter in the request.
 	for name, values := range req.Form {
