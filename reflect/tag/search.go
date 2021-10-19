@@ -16,6 +16,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"reflect"
 )
 
 // search 用于处理 /search URL endpoint
@@ -32,8 +33,12 @@ func search(resp http.ResponseWriter, req *http.Request) {
 	}
 	// ...
 	fmt.Fprintf(resp, "Search: %+v\n", data)
-	// Pack(data)
-
+	err, query := Pack(reflect.ValueOf(data))
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	fmt.Println(query)
 }
 
 func main() {
@@ -44,3 +49,15 @@ func main() {
 		fmt.Printf("Start server error: %v\n", err.Error())
 	}
 }
+
+/* terminal1:
+> go run pack.go params.go search.go
+Start server at: 127.0.0.1:8080
+map[l:<[]string Value> max:<int Value> x:<bool Value>]
+&l=&l=s&l=p&max=10&x=true
+*/
+
+/* terminal2:
+> curl "http://127.0.0.1:8080/search?l=s&l=p&max=10&x=true"
+Search: {Labels:[s p] MaxResults:10 Exact:true}
+*/
