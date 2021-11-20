@@ -6,16 +6,20 @@ import (
 	"time"
 )
 
-const timeout = 12 * time.Second
+const timeout = 4 * time.Second
+
+var startTime time.Time
 
 func main() {
 	log.Println("Start work.")
 
 	// 为本次执行分配超时时间
-	r := New(timeout) // 3 秒
+	r := New(timeout)
+	startTime = time.Now()
+	log.Println(startTime)
 
 	// 添加要执行的任务
-	r.Add(CreatTask(), CreatTask(), CreatTask())
+	r.Add(CreatTask(), CreatTask(), CreatTask(), CreatTask(), CreatTask())
 
 	// 执行任务并处理结果
 	if err := r.Start(); err != nil {
@@ -34,7 +38,7 @@ func main() {
 
 func CreatTask() func(int) {
 	return func(id int) {
-		log.Printf("Processor - Task #%d.", id)
+		log.Printf("Processor - Task #%d-%v.", id, time.Since(startTime))
 		time.Sleep(time.Duration(id) * time.Second)
 	}
 }
