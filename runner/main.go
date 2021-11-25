@@ -1,15 +1,32 @@
 package main
 
+// 控制程序的生命周期
+
 import (
 	"log"
 	"os"
 	"time"
 )
 
+// runner 作为包导出使用的情况下, 只导出了 Start 和 Add 方法,
+// 避免了 run 和 gotInterrupt 被引用, TODO: 好处?
+
 const timeout = 12 * time.Second
 
 func main() {
 	log.Println("Start work.")
+	/*
+	 * 在 main 中初始化通道并添加需要监控的任务,
+	 * 并接收系统中断信号, 在单独的 goroutine 中执行任务,
+	 * 在 main 中监控 goroutine 中任务的执行
+	 * main 中发送系统中断信号给 goroutine, goroutine 发送任务运行
+	 * 结果(中断/完成)给 main
+	 * main 中监控程序的执行时间(r.timeout)
+	 *
+	 * r.complete 和 r.timeout 都需要接收到信号后立即在main中进行处理,
+	 * 所以他们的 channel 缓冲区容量为0
+	 *
+	 */
 
 	// 为本次执行分配超时时间
 	r := New(timeout) // 3 秒

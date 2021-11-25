@@ -1,5 +1,10 @@
 package main
 
+/*
+ * runner 包展示如何使用通道来监视程序的执行时间, 当开发需要调度后台处理任务的
+ * 程序时, 这种模式很有用. 此程序可能会作为 cron 作业执行, 或者在基于定时任务
+ * 的云环境(如 iron.io)里执行
+ */
 import (
 	"errors"
 	"os"
@@ -32,9 +37,11 @@ var ErrInterrupt = errors.New("received interrupt")
 func New(d time.Duration) *Runner {
 	return &Runner{
 		interrupt: make(chan os.Signal, 1),
-		complete:  make(chan error),
-		timeout:   time.After(d),
-		// tasks 不需要初始化，因为其是一个切片, 其零值是 nil
+		// 缓冲区容量为1, 可以保证通道至少能接收一个来自语言运行时
+		// 的 os.Signal 值, 确保语言运行时发送这个事件的时候不会被阻塞
+		complete: make(chan error),
+		timeout:  time.After(d),
+		// tasks 字段的零值是 nil, 满足初始化的要求, 所以不需要被明确初始化
 	}
 }
 
@@ -46,9 +53,22 @@ func (r *Runner) Add(tasks ...func(int)) {
 
 // Start 执行所有任务，并监视通道事件
 func (r *Runner) Start() error {
+	// TODO: golang 信号处理
 	// 接收所有的中断信号
 	signal.Notify(r.interrupt, os.Interrupt)
-	// todo: Notify 函数
+	// golang中对信号的处理主要使用os/signal包中的两个方法:
+	// - Notify 方法用来监听收到的信号
+	// - Stop方法用来取消监听
+
+	/*
+	 *
+	 * Notify 函数让 signal 包将输入信号转发到 channel, 如果没有列出要传递
+	 * 的信号, 会将所有输入信号传递到 channel; 否则只传递列出的输入信号,
+	 * signal 包不会为了向 channel 发送信息而阻塞, 即如果发送时 channel 阻塞了,
+	 * signal 包会直接放弃): 调用者应该保证 channel 有足够的缓存空间可以跟上
+	 * 期望的信号频率, 对使用单一信号用于通知的通道，缓存为1就足够了.
+	 *
+	 */
 
 	// goroutine 执行任务
 	go func() {
@@ -79,10 +99,19 @@ func (r *Runner) run() error {
 func (r *Runner) gotInterrupt() bool {
 	select {
 	case <-r.interrupt:
+		// 联系 line 39 理解:
+		// r.interrupt 缓冲区为1, 即在 select 执行到 default 分支后,
+		// 恰好发生系统中断, 此时 r.interrupt 可以接收, 等下次 select 语句
+		// 执行时, 就能进入 r.interrupt 分支
+		// 如果缓冲区为0, 没做好接收准备(没执行到select)的情况下,
+		// Notify 会放弃发送中断信号(line, 67), 导致中断信号遗漏
+
 		// 停止接收之后的任何信号
+		// TODO: 如果不停止接收的话, 会如何? 如何模拟信号的收发
 		signal.Stop(r.interrupt)
 		return true
 	default:
+		// default 分支会将接收 interrupt 的通道的阻塞调用转变为非阻塞的
 		return false
 	}
 }
