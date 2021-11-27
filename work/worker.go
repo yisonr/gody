@@ -12,7 +12,6 @@ package main
  * 卡住, 所有工作都会被处理.
  *
  */
-
 import "sync"
 
 // Worker 必须满足接口类型, 才能使用工作池
@@ -28,13 +27,22 @@ type Pool struct {
 
 func New(maxGoroutine int) *Pool {
 	p := Pool{
-		work: make(chan Worker),
+		work: make(chan Worker, 40),
 	}
 
 	p.wg.Add(maxGoroutine)
 	for i := 0; i < maxGoroutine; i++ {
 		go func() {
 			for w := range p.work {
+				// 使用 for 循环接收任务, 该 goroutine 依次处理接收到的任务
+				// 无缓冲通道, 在发送 goroutine 执行完成后的短时间内,
+				// 接收 goroutine 便执行完成
+
+				// 如果 p.work 是有缓冲通道, 会造成有工作存在于队列中卡住,
+				// 造成 goroutine 资源的浪费
+				// 这里的思想可以联系channel 的管道场景
+				// 可以通过设置通道的容量验证发送 goroutine 执行完成的时间
+				// 和接收 goroutine 执行完成的时间的时间间隔理解管道的思想
 				w.Task()
 			}
 			p.wg.Done()
@@ -50,6 +58,6 @@ func (p *Pool) Run(w Worker) {
 
 // 等待所有的 goroutine 停止工作
 func (p *Pool) Shutdown() {
-	close(p.work) // 通知 goroutine 发送完成
+	close(p.work) // 不再提交工作, 通知 goroutine 发送完成
 	p.wg.Wait()
 }
