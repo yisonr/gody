@@ -6,6 +6,7 @@ package main
  * 连接或者内存缓冲区); 如果 goroutine 需要从池中得到这些资源中的一个, 必须从
  * 池里申请, 使用完后归还到资源池
  */
+// TODO: 标准库的实现 sync.Pool
 
 import (
 	"errors"
