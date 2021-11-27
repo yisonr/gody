@@ -54,8 +54,9 @@ func main() {
 
 	// 使用池中的连接完成查询
 	for query := 0; query < maxGoroutines; query++ {
+		// 用 maxGoroutines 个 goroutine 并行使用 poolResources 个资源
 		go func(q int) { // 匿名函数
-			performQueries(q, p)
+			performQueries(q, p) // 对 p.resources 的接收和发送
 			wg.Done()
 		}(query)
 	}
@@ -64,7 +65,7 @@ func main() {
 
 	// 关闭池
 	log.Println("Shutdown Program.")
-	p.Close()
+	p.Close() // 对 p.resources 关闭且清空
 }
 
 func performQueries(query int, p *Pool) {
@@ -79,7 +80,6 @@ func performQueries(query int, p *Pool) {
 	defer p.Release(conn)
 
 	// 用等待模拟查询响应
-	// todo: 不初始化随机数种子???
 	time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
 	log.Printf("QID[%d] CID[%d]\n", query, conn.(*dbConnection).ID) // todo
 }
