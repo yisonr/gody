@@ -1,6 +1,11 @@
 package main
 
-import "fmt"
+/* map 是一个拥有键值对元素的无序集合, 其键必须是可以比较的数据类型 */
+
+import (
+	"fmt"
+	"sort"
+)
 
 //
 // 映射: map
@@ -17,18 +22,10 @@ import "fmt"
 // 映射通过合理数量的桶来平衡键值对的分布
 // 对 go 语言的映射来说，生成的散列键的一部分，具体来说是低位(LOB),
 // 被用来选择桶
-//
-//  映射的键可以是任意值，这个值的类型可以是内置的类型，也可以是结构
-// 类型，只要这个值可以使用 == 运算符做比较，切片、函数以及包含切片的
-// 结构类型由于具有引用语义(todo)，不能作为映射的键， 使用这些类型会
-// 造成编译错误
-//
-//
 
-func main() {
-	// 在函数间传递映射并不会制造出该映射的一个副本，当传递映射给一个函数，
-	// 并对这个映射做了修改时，所有对这个映射的引用都会感知到这个修改
-	// 此特性和切片类似， 保证可以用最小的成本来复制映射
+func main1() {
+	// map 是引用类型, 当传递map给一个函数, 并对这个映射做了修改时, 所有对
+	// 这个映射的引用都会感知到这个修改
 
 	colors := map[int]string{
 		1: "测试1",
@@ -62,3 +59,53 @@ func removeColor(colors map[int]string, key int) {
 // Key: 4 value: 测试4
 // Key: 2 value: 测试2
 //
+
+// map 的元素不是一个变量, 不能获取其地址
+// _ = &ages["bob"]  // 编译错误
+// 不能获取 map 元素地址的原因是 map 的增长可能会导致已有元素被重新散列到新的
+// 存储位置, 这样就可能会使获取的地址无效;(TODO: map的增长原理)
+
+// 如果要给map排序, 必须显式的给键排序; 如果键是字符串类型, 可以使用 sort 包
+// 中的 Strings 函数给键排序
+func sortMapKey(ages map[string]int) {
+	// var names []string
+	names := make([]string, 0, len(ages))
+	// 创建一个初始元素为空, 但容量足够容纳 ages map 中所有键的 slice, 相比
+	// []string 的方式更加高效
+	for name := range ages {
+		names = append(names, name)
+	}
+
+	sort.Strings(names)
+	for _, name := range names {
+		fmt.Printf("%s\t%d\n", name, ages[name])
+	}
+}
+
+/*
+	查找元素, 删除元素, 获取map元素个数, 执行 range 循环都可以在 map 的零值 nil
+	上执行, 但是向零值 map 中设置元素会 panic, 设置元素之前, 必须初始化 map
+
+	和 slice 一样, map 不可比较, 唯一合法比较就是和 nil 比较
+
+
+	有时候需要一个 map 并且它的键是 slice, 但是 map 的键必须是可比较的, 所以需
+	要使用下列思路实现:
+	- 定义一个辅助函数k将每个键都映射到字符串, 仅当x和y相等的时候, 才认为 k(x) == k(y)
+	- 创建一个map, map的键是字符串类型, 在每个键元素被访问的时候, 调用这个帮助函数
+*/
+// 通过一个字符串列表使用一个map来记录Add函数被调用的次数
+var m = make(map[string]int)
+
+// 使用 %q 格式化 slice 并记录每个字符串的边界
+// %q: 双引号围绕的字符串, 由Go语法安全地转义
+func k(list []string) string  { return fmt.Sprintf("%q", list) }
+func Add(list []string)       { m[k(list)]++ }
+func Count(list []string) int { return m[k(list)] }
+
+func main2() {
+	var data1 = []string{"sd", "bo", "oisud"}
+	Add(data1)
+	fmt.Println(k(data1))
+	fmt.Println(Count(data1))
+}
