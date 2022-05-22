@@ -3,6 +3,7 @@ package main
 /* map 是一个拥有键值对元素的无序集合, 其键必须是可以比较的数据类型 */
 
 import (
+	"bytes"
 	"fmt"
 	"sort"
 )
@@ -60,10 +61,20 @@ func removeColor(colors map[int]string, key int) {
 // Key: 2 value: 测试2
 //
 
-// map 的元素不是一个变量, 不能获取其地址
-// _ = &ages["bob"]  // 编译错误
-// 不能获取 map 元素地址的原因是 map 的增长可能会导致已有元素被重新散列到新的
-// 存储位置, 这样就可能会使获取的地址无效;(TODO: map的增长原理)
+/*
+   map 的元素不是一个变量, 不能获取其地址
+   _ = &ages["bob"]  // 编译错误
+   不能获取 map 元素地址的原因是 map 的增长可能会导致已有元素被重新散列到新的
+   存储位置, 这样就可能会使获取的地址无效;(TODO: map的增长原理)
+
+   这就导致map的value为结构体时更新value时不能用 map[key].Field 的方式
+   https://segmentfault.com/q/1010000041583173
+   https://go.dev/ref/spec#Assignments
+   The operand must be addressable, that is, either a variable,
+   pointer indirection, or slice indexing operation; or a field selector
+   of an addressable struct operand; or an array indexing operation
+   of an addressable array.
+*/
 
 // 如果要给map排序, 必须显式的给键排序; 如果键是字符串类型, 可以使用 sort 包
 // 中的 Strings 函数给键排序
@@ -71,7 +82,7 @@ func sortMapKey(ages map[string]int) {
 	// var names []string
 	names := make([]string, 0, len(ages))
 	// 创建一个初始元素为空, 但容量足够容纳 ages map 中所有键的 slice, 相比
-	// []string 的方式更加高效
+	// []string 的方式更加高效(需要扩容)
 	for name := range ages {
 		names = append(names, name)
 	}
