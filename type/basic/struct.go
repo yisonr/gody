@@ -3,6 +3,8 @@ package main
 /*
 	结构体的每个成员都可以通过点号访问, 通过点号访问的成员都是变量(即可以地址),
 	因此可以给结构体成员赋值;
+
+	TODO: 空结构体(https://zhuanlan.zhihu.com/p/351176221)
 */
 
 type Employee struct {
@@ -23,7 +25,12 @@ func EmployeeByID(id int) *Employee {
 func SetEmployee() {
 	// EmployeeByID 函数的返回值是 Employee 类型而非 *Employee 类型时, 代码
 	// 将无法编译, 因为赋值表达式的左侧无法识别出一个变量(不能取地址)
-	// TDDO: 是因为函数返回的变量没有在这个函数作用域中? 在堆上?
+
+	// 函数此时的返回值 Employee 类型变量的作用域在 EmployeeByID 在函数
+	//  内部, 函数的调用结果没有在调用它的函数内部进行显式传递, 又因为返回
+	// 值类型不是指针类型, 所以没有发生内存逃逸确定变量存放在堆或栈上,
+	// 即调用该函数的函数不能识别出一个变量
+	// TODO: 内存逃逸
 	EmployeeByID(1).Salary = 0
 }
 

@@ -3,7 +3,6 @@ package main
 /* map 是一个拥有键值对元素的无序集合, 其键必须是可以比较的数据类型 */
 
 import (
-	"bytes"
 	"fmt"
 	"sort"
 )
