@@ -1,5 +1,10 @@
 package main
 
+import (
+	"fmt"
+	"strings"
+)
+
 /*
 	当函数存在返回列表时, 必须显式的以 return 语句结束, 除非函数明确不会走完
 	整个执行流程;
@@ -26,4 +31,56 @@ package main
 	函数的签名:
 	func Sin(x float64) float64 // 使用汇编语言实现
 
+
+	函数变量:
+	函数类型的零值是nil(空值), 调用一个空的函数变量会导致宕机;
+	函数变量可以和空值比较, 但其本身不可比较(函数类型是不可比较的类型), 所以
+	函数不能作为map的键;
+
+
+	** 函数变量使得函数不仅将数据进行参数化, 还将函数的行为当做参数进行传递;
+
+
+
 */
+
+// 传递函数的行为
+func add1(r rune) rune { return r + 1 }
+
+func main1() {
+	// strings.Map 对字符串中的每一个字符使用一个函数,
+	// 将结果连接成为另一个字符串, TODO: strins.Map 的底层实现
+	fmt.Println(strings.Map(add1, "HAL-90000"))
+}
+
+/*
+	匿名函数:
+	匿名函数只能在包级别的作用域声明, 可以使用函数字面量在任何表达式内指定函数
+	变量; 如;
+	strings.Map(func(r rune) rune { return r + 1}, "HAL-90000")
+
+	更重要的是以这种方式定义的函数能获取到整个词法环境, 因此里层的函数可以使用
+	外层函数中的变量, 如下例的 squares 函数
+
+*/
+
+func squares() func() int {
+	var x int
+	return func() int {
+		// 里层的匿名函数能获取和更新外层squares函数的局部变量; 这些隐藏的
+		// 变量引用就是把函数归类为引用类型而且函数变量无法进行比较的原因;
+		// 函数变量类似与使用闭包方法实现的变量, 通常把函数变量称为闭包;
+		x++
+		return x * x
+	}
+}
+
+func main() {
+	f := squares()
+	fmt.Println(f()) // 1
+	fmt.Println(f()) // 4
+	fmt.Println(f()) // 9
+	fmt.Println(f()) // 16
+	//  变量x的生命周期不是由其作用域决定的, 变量x在main函数中返回
+	// squares 函数后依旧存在(虽然x此时隐藏在函数变量f中)
+}
