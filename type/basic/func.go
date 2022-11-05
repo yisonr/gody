@@ -59,6 +59,8 @@ func main1() {
 	变量; 如;
 	strings.Map(func(r rune) rune { return r + 1}, "HAL-90000")
 
+	匿名函数的使用, ./toposort.go, ./findlinks.go
+
 	更重要的是以这种方式定义的函数能获取到整个词法环境, 因此里层的函数可以使用
 	外层函数中的变量, 如下例的 squares 函数
 
